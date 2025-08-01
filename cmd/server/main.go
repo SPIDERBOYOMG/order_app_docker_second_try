@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
@@ -20,6 +21,20 @@ func main() {
 	cfg := config.LoadConfig()
 
 	db, err := sqlx.Connect("postgres", cfg.DatabaseURL)
+
+	for i := 0; i < 10; i++ {
+		if err == nil {
+			break
+		}
+		log.Printf("❌ Failed to connect to database, retrying in 2 seconds: %v", err)
+		time.Sleep(2 * time.Second)
+		db, err = sqlx.Connect("postgres", cfg.DatabaseURL)
+	}
+
+	if err != nil {
+		log.Fatalf("❌ Failed to connect to database: %v", err)
+	}
+
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
